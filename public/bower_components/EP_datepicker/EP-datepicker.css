@@ -1,0 +1,176 @@
+.datepicker {
+    padding: 15px;
+    width: 230px;
+    height: 248px;
+    border: 1px solid #cccccc;
+    border-radius: 5px;
+    box-shadow: 0 2px 2px #ededed;
+    font-size: 12px;
+    background: #ffffff;
+    position: absolute;
+}
+
+.datepicker table {
+    margin: 0;
+    width: 230px;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.datepicker .table-condensed th, 
+.datepicker .table-condensed td {
+    padding: 0;
+}
+
+.datepicker .prev,
+.datepicker .next {
+    width: 30px;
+    height: 25px;
+    text-indent: -9999px;
+    cursor: pointer;
+    background: url(images/EP_datepicker_left_arrow.png) 7px 6px no-repeat;
+}
+
+.datepicker .next {
+    background: url(images/EP_datepicker_right_arrow.png) 15px 6px no-repeat;
+}
+
+.datepicker .actions {
+    overflow: hidden;
+    zoom: 1;
+}
+
+.datepicker .actions div {
+    float: left;
+}
+
+.datepicker .datepicker-switch {
+    width: 95px;
+    font-size: 16px;
+}
+
+.datepicker .datepicker-switch a,
+.datepicker .datepicker-switch a:visited {
+    color: #333;
+    text-decoration: none;
+}
+.datepicker .datepicker-switch a:hover {
+    color: #557dcd;
+    border-bottom: 1px solid #557dcd;
+}
+
+.datepicker .actions .today-btn {
+    float: right;
+    border-radius: 2px;
+    width: 40px;
+    height: 25px;
+    line-height: 25px;
+    color: #ffffff;
+    text-align: center;
+    cursor: pointer;
+    background: #557dcd;
+}
+
+.datepicker .year,
+.datepicker .month {
+    display: inline;
+    float: left;
+    margin: 26px 16px 0px;
+    width: 42px;
+    height: 24px;
+    border-radius: 2px;
+    text-align: center;
+    line-height: 24px;
+    cursor: pointer;
+}
+
+.datepicker-years .year:hover,
+.datepicker-months .month:hover,
+.datepicker-years .active,
+.datepicker-months .active {
+    color: #ffffff;
+    background: #557dcd;
+}
+
+.datepicker-years .prev,
+.datepicker-years .next,
+.datepicker-months .prev,
+.datepicker-months .next {
+    /*visibility: hidden!important;*/
+}
+
+.datepicker-arrow-up {
+
+}
+
+.datepicker .datepicker-days .dow {
+    width: 30px;
+    height: 30px;
+    text-align: center;
+    font-weight: normal;
+    color: #999999;
+}
+
+.datepicker .datepicker-days .weekend {
+    color: #f76733;
+}
+
+.datepicker .datepicker-days .today {
+    color: #68aaff;
+}
+
+.datepicker .datepicker-days tbody tr td:last-child {
+    border: none;
+}
+
+.datepicker .datepicker-days tbody td {
+    width: 30px;
+    height: 30px;
+    text-align: center;
+    cursor: pointer;
+}
+
+.datepicker .datepicker-days tbody .old,
+.datepicker .datepicker-days tbody .new {
+    color: #cccccc;
+}
+.datepicker .datepicker-days .day:hover,
+.datepicker .datepicker-days .active {
+    border-radius: 2px;
+    color: #ffffff;
+    background-color: #557dcd;
+}
+.datepicker .datepicker-days .disabled {
+    color: #999;
+}
+.datepicker .datepicker-days .disabled:hover {
+    color: inherit; 
+    background: none;
+}
+
+.datepicker .datepicker-days .event {
+    background-image: url(images/icon_event_sign.png);
+    background-position: center 22px;
+    background-repeat: no-repeat;
+}
+
+.datepicker .datepicker-arrow-up {
+    display: block;
+    width: 25px;
+    height: 13px;
+    background: url(images/EP_datepicker_arrow.png) 0 0 no-repeat;
+    position: absolute;
+    top: -13px;
+    left: 120px;
+    overflow: hidden;
+}
+
+.datepicker-orient-bottom .datepicker-arrow-up {
+    top: auto;
+    bottom: -13px;
+    background-position: 0 -12px;
+}

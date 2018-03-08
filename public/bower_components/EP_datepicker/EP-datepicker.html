@@ -1,0 +1,50 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <link rel="stylesheet" href="../../css/core.css">
+    <link rel="stylesheet" href="EP-datepicker.css">
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8/jquery.min.js"></script>
+    <script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js?lang=javascript&skin=sunburst"></script>
+    <!-- script src="../../js/jquery.js"></script -->
+    <!-- script src="EP-util.js"></script -->
+    <script src="EP-datepicker.js"></script>
+    <script>
+        $(function(){
+            $('#ical').EP_datepicker();
+            $('#ical2').EP_datepicker({
+                offsetX: 20, 
+                offsetY: 30
+            });
+        });
+    </script>
+</head>
+<body>
+<input id="ical" type="text" class="EP-datepicker form-control form-sm form-smh"/>
+<input id="ical2" type="text" class="EP-datepicker form-control form-sm form-smh"/>
+<br />
+test test test <select name="" id="">
+    <option value="">test</option>
+</select>
+<a href="">this is new</a>
+<pre class="prettyprint">
+$(function(){
+    $('#ical').EP_datepicker();
+    $('#ical2').EP_datepicker({
+        offsetX: 20, 
+        offsetY: 30
+    });
+});
+
+// default setting 
+autoclose: true,
+startDate: -Infinity,
+endDate: Infinity,
+format: 'yyyy-mm-dd',
+startView: 0,
+offsetX: 0,
+offsetY: 0
+</pre>
+</body>
+</html>
