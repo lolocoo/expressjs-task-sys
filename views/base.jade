@@ -1,0 +1,86 @@
+doctype html
+html
+  head
+    title #{title}-UED
+    link(rel='stylesheet', href='/bower_components/chosen_v1.0.0/chosen.css')
+    link(rel='stylesheet', href='/stylesheets/nprogress.css')
+    link(rel='stylesheet', href='/stylesheets/main.css')
+    link(rel='stylesheet', href='/bower_components/EP_datepicker/EP-datepicker.css')
+  body
+    .header
+        .layout
+            .submenu
+                ul
+                    if (locals.current_user)
+                        if (current_user.position === 0)
+                            li.submenu-item(class=flag=='index'?'selected':'')
+                                a(href="/") 部门任务
+                            li.submenu-item(class=flag=='performance'?'selected':'')
+                                a(href="/performance") 绩效任务
+                            li.submenu-item(class=flag=='schedule'?'selected':'')
+                                a(href="/schedule") 工作周报
+                            li.submenu-item(class=flag=='user'?'selected':'')
+                                a(href="/user") 用户管理
+                            //- li.submenu-item
+                            //-     a(href="/workdate") 假期调整
+                        else
+                            li.submenu-item(class=flag=='my'?'selected':'')
+                                a(href="/my") 我的任务
+                            li.submenu-item(class=flag=='index'?'selected':'')
+                                a(href="/") 部门任务
+                            li.submenu-item(class=flag=='performance'?'selected':'')
+                                a(href="/performance") 绩效任务
+                            li.submenu-item(class=flag=='schedule'?'selected':'')
+                                a(href="/schedule_list") 工作周报
+                        li.submenu-item.dropdown
+                            a(data-toggle="dropdown", href="#") #{current_user.name}
+                                b.caret
+                            ul.dropdown-menu(role="menu", aria-labelledby="dLabel")
+                                li
+                                    a(href="/change_password") 修改密码
+                                li  
+                                    a(href="/logout") 退出
+                    else 
+                        li.submenu-item
+                            a(href="/login") 登录
+
+            a.logo(href="/")
+                span 任务管理系统
+
+    block content
+
+    .footer
+        .team-member
+            .layout
+                if locals.allUsers
+                    mixin ued_users(users)
+                        each user in users
+                            dl(class="#{user.class}")
+                                dt #{user.title}
+                                each local_user in locals.allUsers
+                                    if local_user.position === user.pos
+                                        dd #{local_user.name}
+                    +ued_users([{'title':'总监', 'pos': 0, 'class':''}, {'title':'交互设计', 'pos': 1, 'class':''},{'title':'视觉设计', 'pos': 2, 'class':'ui-member'},{'title':'前端工程师', 'pos': 3, 'class':''}])
+        .copy-right
+            .layout
+                .min-logo
+                p UED任务管理系统 &copy 2013-2014 Easypass
+    #lifter.lifter
+
+    if locals.current_user
+        script.
+            var CURRENT_USER = '#{current_user.userId}';
+            var CURRENT_USER_POSITION = '#{current_user.position}';
+    script(src="/javascripts/jquery.min.js")
+    script(src="/javascripts/angular.min.js")
+    script(src="/javascripts/jquery-ui-1.9.2.custom.js")
+    script(src="/bower_components/underscore/underscore-min.js")
+    script(src="/bower_components/chosen_v1.0.0/chosen.jquery.min.js")
+    script(src="/bower_components/EP_datepicker/EP-datepicker.js")
+    script(src="/bower_components/moment/min/moment.min.js")
+    script(src="/javascripts/jquery.base64.js")
+    script(src="/javascripts/slimScrollHorizontal.js")
+    script(src="/javascripts/nprogress.js")
+    script(src="/javascripts/bootstrap.min.js")
+    script(src="/javascripts/ZeroClipboard.js")
+    script(src="/javascripts/new.js")

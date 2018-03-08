@@ -1,0 +1,540 @@
+extend base
+block content
+    .layout.task-detail
+        if task.length == 0
+            .no-msg-lg
+                .no-msg-lg-header
+                    a.right(href="/") 返回首页
+                    h3 暂时没有任务
+        else
+            - var now                  = moment().valueOf()
+            - var taskStartTime        = task['departStartDate']
+            - var flagDate             = moment(taskStartTime).set('date', 1).format('YYYY-MM-DD')
+            - var deparEndtTime        = task['departEndDate']
+            - var taskEndtTime         = task['realEndDate']
+            - var UDexpectDate         = task['UDexpectDate']
+            - var UIexpectDate         = task['UIexpectDate']
+            - var FEexpectDate         = task['FEexpectDate']
+            - var UDStartDate          = task['UDStartDate']
+            - var UDEndDate            = task['UDEndDate']
+            - var UIStartDate          = task['UIStartDate']
+            - var UIEndDate            = task['UIEndDate']
+            - var FEStartDate          = task['FEStartDate']
+            - var FEEndDate            = task['FEEndDate']
+            - var expectDays           = UDexpectDate + UIexpectDate + FEexpectDate
+            - var departExpectDays     = calc_workday(deparEndtTime, taskStartTime)
+            - var pastDays             = moment().diff(taskStartTime, 'days') + 1
+            - var actualDays           = 0
+            - var weekendDays          = 0
+            - var UD                   = task['UD'] == null ? '' : task['UD']
+            - var UI                   = task['UI'] == null ? '' : task['UI']
+            - var FE                   = task['FE'] == null ? '' : task['FE']
+            - var LEADER               = 2
+            - var allTaskUserId        = (UD+','+UI+','+FE).split(',')
+            - var taskMembers          = []
+
+            - var UDtaskEndDate
+            - var UDreviewDaysDuration = []
+            - var UDpauseDaysDuration  = []
+
+            - var UItaskEndDate
+            - var UIreviewDaysDuration = []
+            - var UIpauseDaysDuration  = []
+
+            - var FEtaskEndDate
+            - var FEreviewDaysDuration = []
+            - var FEpauseDaysDuration  = []
+            - var zero_day             = '0000-00-00'
+
+            - var pauseDays = getPauseDays(task['pauseDays'])
+
+            if UDEndDate != '0000-00-00'
+                - UDtaskEndDate = moment(UDEndDate).valueOf()
+            else
+                - UDtaskEndDate = moment().valueOf()
+
+            if UIEndDate != '0000-00-00'
+                - UItaskEndDate = moment(UIEndDate).valueOf()
+            else
+                - UItaskEndDate = moment().valueOf()
+
+            if task['FEEndDate'] != '0000-00-00'
+                - FEtaskEndDate = moment(task['FEEndDate']).valueOf()
+            else
+                - FEtaskEndDate = moment().valueOf()
+
+            - UDreviewDaysDuration = getDurationDays(task['UDreviewDays'])
+            - UDpauseDaysDuration = getDurationDays(task['UDpauseDays'])
+
+            - UIreviewDaysDuration = getDurationDays(task['UIreviewDays'])
+            - UIpauseDaysDuration = getDurationDays(task['UIpauseDays'])
+
+            - FEreviewDaysDuration = getDurationDays(task['FEreviewDays'])
+            - FEpauseDaysDuration = getDurationDays(task['FEpauseDays'])
+
+            - var UD_user_names = []
+            - var UI_user_names = []
+            - var FE_user_names = []
+
+            each userId in _.compact(UD.split(','))
+                each user in locals.allUsers
+                    if user.userId == userId
+                         - UD_user_names.push(user.name)
+
+            each userId in _.compact(UI.split(','))
+                each user in locals.allUsers
+                    if user.userId == userId
+                         - UI_user_names.push(user.name)
+
+            each userId in _.compact(FE.split(','))
+                each user in locals.allUsers
+                    if user.userId == userId
+                         - FE_user_names.push(user.name)
+
+            if UD
+                - taskMembers.push('UD')
+            if UI
+                - taskMembers.push('UI')
+            if FE
+                - taskMembers.push('FE')
+
+            - var memberExpectDayCount = 0
+
+            each member in taskMembers
+                if task[member+'expectDate'] != 0
+                    - memberExpectDayCount += 1
+
+            - var taskMembersPos = {}
+
+            each member in taskMembers
+                case member
+                    when 'UD'
+                        - taskMembersPos[1] = 'UD'
+                    when 'UI'
+                        - taskMembersPos[2] = 'UI'
+                    when 'FE'
+                        - taskMembersPos[3] = 'FE'
+
+            - var taskProgressStatus = 0
+            each pos in taskMembers
+                if task[pos+'taskStatus'] == 4
+                    - taskProgressStatus += 1
+
+            if taskMembers.length === memberExpectDayCount
+                - actualDays = expectDays
+
+            if taskMembers.length > memberExpectDayCount || expectDays === 0
+                - actualDays = moment(task['departEndDate']).diff(taskStartTime, 'days') - 1
+
+            - for (var i = 0; i < pastDays; i++)
+                - if (moment(taskStartTime).add('d',i).day() === 0 || moment(taskStartTime).add('d',i).day() === 6)
+                    - weekendDays += 1
+
+            - pastDays = pastDays - weekendDays
+
+            - var percent = (pastDays-1)*100 / actualDays
+
+            - var c_today = moment();
+            
+            - var c_allMonth = 0
+
+            if task['realEndDate'] === '0000-00-00'
+                - c_allMonth = moment().get('year')*12 + moment().get('month') + 1 - moment(task['departStartDate']).get('year')*12 - moment(task['departStartDate']).get('month')
+            else
+                - c_allMonth = moment(task['realEndDate']).get('year')*12 + moment(task['realEndDate']).get('month') + 1 - moment(task['departStartDate']).get('year')*12 - moment(task['departStartDate']).get('month')
+            - c_allMonth = c_allMonth === 1 ? 2 : c_allMonth
+           
+            - var remark_action = {'zt': '暂停', 'wc': '完成', 'jx': '继续', 'ps': '评审', 'bz': '备注' }
+            - var userid_to_name = {}
+           
+            each user in locals.allUsers
+                - userid_to_name[user.userId] = user.name
+
+
+            - var reviewing_users = []
+            if task['taskState'] == 1
+                if task['UDtaskStatus'] === 3
+                    - reviewing_users.push('交互')
+                if task['UItaskStatus'] === 3
+                    - reviewing_users.push('视觉')
+                else if task['FEtaskStatus'] === 3
+                    - reviewing_users.push('前端')
+
+            .task-detail-header
+                if back_url
+                    a.back(href="#{back_url}") 返回
+                h2.task-detail-title #{task.taskName}
+                    if reviewing_users.length
+                        small.reviewing #{reviewing_users.join('、') +'评审中'}
+
+            .task-duration-header
+                case task['taskState']
+                    when 0
+                        h3 未开始
+                    when 1
+                        h3 已进行：
+                            span.day #{pastDays} 天
+                    when 4
+                        h3 实际工期：
+                            span.day #{Math.abs(calc_workday(taskEndtTime, taskStartTime))} 天
+
+                if locals.current_user && locals.current_user.position == 0
+                    a.modify-work-period(data-taskId="#{task['taskId']}") 修改工期
+                    .modify-work-period-content(style="display:none;")
+                        table.table
+                            colgroup
+                                col
+                                col
+                                col(style="width:75px")
+                                col
+                                col
+                            tr
+                                th 工作内容
+                                th 负责人
+                                th 预计工时
+                                th 工时说明
+                                th 延期
+                            if UD
+                                tr
+                                    td 交互设计
+                                    td  #{ UD_user_names.join(' ') }
+                                    td
+                                        input.form-control(type="number", min="0", name="UDexpectDate", value="#{UDexpectDate}")
+                                    td
+                                        | 功能框架梳理：#{task['UD_1']} <br>
+                                        | 交互原型设计：#{task['UD_2']} <br>
+                                        | 整体交互规范：#{task['UD_3']} <br>
+                                        | 交互说明文档：#{task['UD_4']} <br>
+                                        | 可用性测试：  #{task['UD_5']} <br>
+                                    td
+                            if UI
+                                tr
+                                    td 视觉设计
+                                    td #{ UI_user_names.join('<br />') }
+                                    td
+                                        input.form-control(type="number", min="0", name="UIexpectDate", value="#{UIexpectDate}")
+                                    td
+                                        | 主风格：#{task['UI_1']} <br>
+                                        | 风格延展：#{task['UI_2']} <br>
+                                        | 页面规范：#{task['UI_3']} <br>
+                                        | 切图制作：#{task['UI_4']} <br>
+                                    td
+                            if FE
+                                tr
+                                    td 前端开发
+                                    td #{ FE_user_names.join('<br>') }
+                                    td
+                                        input.form-control(type="number", min="0", name="FEexpectDate", value="#{FEexpectDate}")
+                                    td
+                                        | 前端重构：#{task['UI_1']} <br>
+                                        | 交互实现：#{task['UI_2']} <br>
+                                    td
+            #J_gannt.gantt-view
+                .gantt-calendar
+                    - for(var j=0; j<c_allMonth; j++)
+                        - var gantt_month = moment(task['departStartDate']).add('months', j);
+                        - var gantt_days = gantt_month.daysInMonth();
+                        .gantt-calendar-item
+                            .gantt-calendar-month #{gantt_month.format('YYYY-MM')}
+                            .gantt-calendar-days
+                                ul
+                                    - for(var i = 1; i <= gantt_days; i++)
+                                        - var gantt_day_classes = [(gantt_month.set('date', i).weekday() === 0 || gantt_month.set('date', i).weekday() === 6)?'weekend':'']
+                                        if gantt_month.set('date', i).format('YYYYMMDD') == moment().format('YYYYMMDD') && task['realEndDate'] === zero_day
+                                            - gantt_day_classes.push('today')
+                                        li(class=gantt_day_classes) #{i}
+                .gantt-wrap
+                    mixin task_user(type, left)
+                        - var users = locals.allUsers
+                        for user in users
+                            if user.userId == task[type].split(',')[0]
+                                img(src="/images/users/#{user.userName}.png", style="position:absolute;top:5px;left:#{left}px;")
+                    mixin user_comments(position)
+                        - var remark_arr = []
+                        each remark in task.remarks
+                            if remark.position == position
+                                - remark_arr.push(moment(remark.markDate).format('YYYY-MM-DD'))
+                        - remark_arr = _.uniq(remark_arr)
+                        each date in remark_arr
+                            - var remark_html = '<div class="gantt-comments-wrap">'
+                            each remark in task.remarks
+                                if moment(remark.markDate).format('YYYY-MM-DD') == date
+                                    - remark_html += '<p>' + user_position[remark.position] + '：' + remark.content + '</p>'
+                            - remark_html += '</div>'
+                            span.glyphicon.glyphicon-comment.gantt-comments(
+                                    data-comment-date="#{date}",
+                                    data-taskId="#{task.taskId}",
+                                    data-toggle="tooltip",
+                                    data-placement="right",
+                                    data-title="#{remark_html}",
+                                    style="left:#{moment(date).diff(flagDate, 'd')*22+5}px;"
+                                )
+                    mixin gantt_bar(iwidth)
+                        - var gantt_all_pos = ['UD', 'UI', 'FE']
+                        - var users = locals.allUsers
+                        - var users_pos_id = {'UD': 1, 'UI': 2, 'FE': 3 }
+                        - var pos_task_end_date = {'UD': UDtaskEndDate, 'UI': UItaskEndDate, 'FE': FEtaskEndDate }
+
+                        each pos in gantt_all_pos
+                            if task[pos]
+                                div(class="gantt-#{pos.toLowerCase()}")
+                                    .gantt-bar-wrap
+                                        for user in users
+                                            if user.userId == task[pos].split(',')[0]
+                                                img(src="/images/users/#{user.userName}.png", 
+                                                    style="position:absolute;top:5px;left:#{moment(task[pos+'StartDate']==zero_day?taskStartTime:task[pos+'StartDate']).diff(flagDate, 'd')*iwidth-29}px;")
+                                        if task[pos+'expectDate'] != 0
+                                            .gantt-bar.text-right(style="left:#{moment(task[pos+'StartDate']==zero_day?taskStartTime:task[pos+'StartDate']).diff(flagDate, 'd')*iwidth}px;width:#{task[pos+'expectDate']*22}px;")
+                                                | #{task[pos+'expectDate']} 天
+                                        if locals.current_user && current_user.userId == task[pos].split(',')[0] && task[pos+'expectDate'] == 0 && task['taskState'] == 1
+                                            div(style="left:#{(moment().diff(flagDate, 'd')+1)*iwidth+ 10}px;position:absolute; top:12px;")
+                                                a.J_assess-project-time(data-taskId="#{task['taskId']}", data-user-pos="#{taskMembersPos[current_user.position]}") #{pos} 评估工期
+                                        if task[pos+'StartDate'] !== zero_day
+                                            div(class="gantt-bar #{pos.toLowerCase()}",
+                                                style="left:#{moment(task[pos+'StartDate']).diff(flagDate, 'd')*iwidth}px;width:#{(moment(pos_task_end_date[pos]).diff(task[pos+'StartDate'], 'd')+1)*22}px;")
+                                                | #{pos=='UD'?'UE':pos}
+                                        else
+                                            if task[pos+'expectDate'] == 0 
+                                                .gantt-bar.unevaluated(style="left:#{(moment(taskStartTime).get('D')-1)*22}px;")
+                                                    if locals.current_user && current_user.userId == task[pos].split(',')[0]
+                                                        a.J_assess-project-time(data-taskId="#{task['taskId']}", data-user-pos="#{taskMembersPos[current_user.position]}") #{pos} 评估工期
+                                                    else
+                                                        span
+                                                            case pos
+                                                                when 'UD'
+                                                                    | 交互
+                                                                when 'UI'
+                                                                    | 视觉
+                                                                when 'FE'
+                                                                    | 前端
+                                                            | 未评估                                                   
+                                                    
+                                        if task[pos+'StartDate'] !== '0000-00-00' &&　task[pos+'EndDate'] !== '0000-00-00'
+                                            .gantt-bar-tip(style="left:#{(moment(pos_task_end_date[pos]).diff(flagDate, 'd')+1)*22-5}px;")
+                                                i.glyphicon.glyphicon-ok(class="icon-#{pos.toLowerCase()}")
+                                    //- if task[pos+'reviewDays']
+                                    //-     .gantt-bar-wrap
+                                    //-         each val in task[pos+'reviewDays'].split('|')
+                                    //-             .gantt-bar.review(style="left:#{(moment(val.split(',')[0]).diff(flagDate, 'd'))*22}px;width:#{(moment(val.split(',')[1]).diff(val.split(',')[0], 'd') + 1)*22}px;")
+                                    if task[pos+'pauseDays']
+                                        .gantt-bar-wrap
+                                            each val in task[pos+'reviewDays'].split('|')
+                                                .gantt-bar.pause(style="left:#{(moment(val.split(',')[0]).diff(flagDate, 'd'))*22}px;width:#{(moment(val.split(',')[1]).diff(val.split(',')[0], 'd') + 1)*22}px;")
+                    +gantt_bar(22)
+                    if task.remarks
+                        .gantt-bar-wrap
+                            - var remark_arr = []
+
+                            each remark in task.remarks
+                                - remark_arr.push(moment(remark.markDate).format('YYYY-MM-DD'))
+                            - remark_arr = _.uniq(remark_arr)
+                            each date in remark_arr
+                                - var remark_html = '<div class="gantt-comments-wrap">'
+                                - var is_review = false
+                                each remark in task.remarks
+                                    if remark.action == 'ps'
+                                        - is_review = true
+                                    if moment(remark.markDate).format('YYYY-MM-DD') == date
+                                        - remark_html += '<p>' + userid_to_name[remark.userId] + '：' + remark.content + '</p>'
+                                - remark_html += '</div>'
+                                span.glyphicon.glyphicon-comment.gantt-comments(
+                                        class=is_review?'is-review':'',
+                                        data-comment-date="#{date}",
+                                        data-taskId="#{task.taskId}",
+                                        data-toggle="tooltip",
+                                        data-placement="top",
+                                        data-title="#{remark_html}",
+                                        style="left:#{moment(date).diff(flagDate, 'd')*22+5}px;"
+                                    )
+                case task['taskState']
+                    when 2
+                        .gantt-disabled
+                            h3 任务暂停
+                    when 3
+                        .gantt-disabled
+                            h3 任务终止
+
+            .task-detail-options(style="margin-top:10px;")
+                if locals.current_user
+                    each id in allTaskUserId
+                        if id == current_user.userId && current_user.position !== 0
+                            ul#userTaskOption
+                                case task['taskState']
+                                    when 1
+                                        case task[taskMembersPos[current_user.position]+'taskStatus']
+                                            when 0
+                                                li.begin 开始
+                                                li.remark 备注
+                                            when 1
+                                                li.review 评审
+                                                li.pause 暂停
+                                                li.complete 完成
+                                                li.remark 备注
+                                            when 2
+                                                li.continue 继续
+                                            when 3
+                                                li.cancel-review 取消评审
+                    if current_user.position == 0
+                        ul#userTaskOption
+                            case task['taskState']
+                                when 0
+                                    li.whole-start 开始任务
+                                when 1
+                                    li.whole-pause 暂停
+                                    li.whole-stop 终止
+                                    li.remark 备注
+                                when 2
+                                    li.whole-continue 继续
+                                    li.whole-stop 终止
+                                    li.remark 备注
+                                
+    .task-comment-wrapper
+        .layout
+            .task-main
+                input#taskId(type="hidden", value="#{task.taskId}")
+                h3.task-comment-title 任务动态
+                .comments-list
+                    ul
+                        if comments && comments.length
+                            each item in comments
+                                li.comment-item
+                                    span.avatar
+                                        - var avatar_url = ''
+                                        - var comments_status = ''
+                                        if item.userName !== '匿名'
+                                            - avatar_url = '../images/avatar_a.png'
+                                        else
+                                            - avatar_url = '../images/avatar_b.png'
+                                        
+                                        if item.pass == 0
+                                            - comments_status = '【评审未通过】'
+                                        else if item.pass == 1
+                                            - comments_status = '【评审通过】'
+                                        img(src="#{avatar_url}", style="margin:10px 0 0 15px;")
+                                    .comment-content
+                                        p
+                                            span.name #{item.userName} 
+                                            span.time #{moment(item.time).format('YYYY.MM.DD')}
+                                        p.content
+                                            if item.isPM == 1
+                                                span.comment-review-status #{comments_status}
+                                            | #{item.content}
+                        if task.remarks.length
+                            each remark in task.remarks
+                                - var remark_user
+                                each user in locals.allUsers
+                                    if remark.userId === user.userId
+                                        - remark_user = user
+                                li.comment-item
+                                    span.avatar
+                                        img(src="/images/users/m_#{remark_user.userName}.png", width="48", height="48")
+                                    .comment-content
+                                        p
+                                            span.name #{remark_user.name}
+                                            i.type #{remark_action[remark.action]}
+                                            span.time #{moment(remark.markDate).format('YYYY.MM.DD')}
+                                        p.content #{remark.content}
+
+            .task-sub
+                if locals.current_user
+                    each pos in taskMembers
+                        if task[pos+'taskStatus'] == 3 && current_user.userId == task[pos].split(',').shift()
+                            .sub-mod
+                                .review-url-decoration(id="#{'J_'+pos+'_review_url'}")
+                .sub-mod
+                    .sub-mod-hd
+                        h3 预计工期：#{departExpectDays} 天
+                            span.fz12 (#{moment(taskStartTime).format('MM.DD')} - #{moment(deparEndtTime).format('MM.DD')})
+                    .sub-mod-bd
+                        ul.user-duration-days
+                            if UD
+                                li
+                                    if UDexpectDate == 0
+                                        span.right.text-muted 未评估
+                                    else
+                                        .user-day #{UDexpectDate}天
+                                    .user-position.ue 交互
+                                    .user-name= UD_user_names.join(' ')
+                            if UI
+                                li
+                                    if UIexpectDate == 0
+                                        span.right.text-muted 未评估
+                                    else
+                                        .user-day #{UIexpectDate}天
+                                    .user-position.ui 视觉
+                                    .user-name= UI_user_names.join(' ')
+                            if FE
+                                li
+                                    if FEexpectDate == 0
+                                        span.right.text-muted 未评估
+                                    else
+                                        .user-day #{FEexpectDate}天
+                                    .user-position.fe 前端
+                                    .user-name= FE_user_names.join(' ')
+
+
+                if task['taskState'] == 4
+                    .sub-mod
+                        .sub-mod-hd
+                            h3 实际工期：#{Math.abs(calc_workday(taskEndtTime, taskStartTime))} 天
+                                span.fz12 (#{moment(taskStartTime).format('MM.DD')} - #{moment(task['realEndDate']).format('MM.DD')})
+                        .sub-mod-bd
+                            ul.user-duration-days
+                                if task['UD']
+                                    li
+                                        .user-day #{Math.abs(calc_workday(UDEndDate, UDStartDate))} 天
+                                        .user-position.ue 交互
+                                        .user-name= UD_user_names.join(' ')
+                                if task['UI']
+                                    li
+                                        .user-day #{Math.abs(calc_workday(UIEndDate, UIStartDate))} 天
+                                        .user-position.ui 视觉
+                                        .user-name= UI_user_names.join(' ')
+                                if task['FE']
+                                    li
+                                        .user-day #{Math.abs(calc_workday(FEEndDate, FEStartDate))} 天
+                                        .user-position.fe 前端
+                                        .user-name= FE_user_names.join(' ')
+                .sub-mod
+                    .sub-mod-hd
+                        h3 产品需求：
+                    .sub-mod-bd
+                        .product-require-detail
+                            if task.mainPM
+                                p
+                                    span 产品经理：
+                                    span#J_task-pm #{task.mainPM.split(',').join(' ')}
+                            if task.projStartDate != '0000-00-00'
+                                p
+                                    span 项目时间：#{moment(task.projStartDate).format('YYYY.MM.DD')} - #{moment(task.projEndDate).format('YYYY.MM.DD')}
+                            p
+                                span UED时间：#{moment(task.departStartDate).format('YYYY.MM.DD')} - #{moment(task.departEndDate).format('YYYY.MM.DD')}
+                            p
+                                span 项目描述：#{task.taskIntro}
+
+    if Object.prototype.toString.call(task) == '[object Object]'
+        script.
+            var TASKUSER = "#{(UD+','+UI+','+FE+','+LEADER).split(',')}";
+            var ALL_TASK_USERSID = '#{allTaskUserId}';
+            var TASK_MEMBERS_POS = !{JSON.stringify(taskMembersPos)};
+            var TASKUSER_LEN = #{taskMembers.length};
+            var TASK_PROGRESS_STATUS = #{taskProgressStatus};
+
+            var CURRENT_TASK = {
+                STARTDATE: '#{taskStartTime}',
+                WHOLE_P_DAYS: '#{task["pauseDays"]}',
+                UD_TASKSTATUS : '#{task["UDtaskStatus"]}',
+                UI_TASKSTATUS : '#{task["UItaskStatus"]}',
+                FE_TASKSTATUS : '#{task["FEtaskStatus"]}',
+                UD_P_DAYS : '#{task["UDpauseDays"]}',
+                UI_P_DAYS : '#{task["UIpauseDays"]}',
+                FE_P_DAYS : '#{task["FEpauseDays"]}',
+                UD_R_DAYS : '#{task["UDreviewDays"]}',
+                UI_R_DAYS : '#{task["UIreviewDays"]}',
+                FE_R_DAYS : '#{task["FEreviewDays"]}',
+                UDENDDATE : '#{UDEndDate}',
+                UIENDDATE : '#{UIEndDate}',
+                FEENDDATE : '#{FEEndDate}'
+            };
+
+            var TASKREMARKS = !{JSON.stringify(task.remarks)};

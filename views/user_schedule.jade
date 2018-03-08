@@ -1,0 +1,70 @@
+extends base
+block content
+  .container
+    .layout
+      .schedule-page
+        h1.schedule-title 周报记录
+        div.user-list(class=cls)
+          ul
+            li
+              img(src="/images/users/m_#{user.userName}.png")
+              p #{user.name}
+
+        if userSheet.length
+          - var recent_sheet = JSON.parse(userSheet.shift().contents)
+          h3.schedule-subtitle 本周周报
+          table.table
+            tr
+              th 任务名称
+              th 工作内容
+              th 使用工时
+              th 参与人
+              th 工作完成
+              th 项目完成
+            each item in recent_sheet.items
+              tr
+                td #{item.name}
+                td
+                  each content in item.contents
+                    p #{content.detail}
+                td
+                  each content in item.contents
+                    p #{content.elapse}
+                td #{item.participants}
+                td
+                  each content in item.contents
+                    p #{content.progress}%
+                td #{item.percent}%
+
+          h3.schedule-subtitle 全部周报
+          table.table
+            each sheet in userSheet
+              tr
+                td
+                  p.js-toggle-sheet #{ moment(sheet.sendDate).day(1).format('YYYY/MM/DD') } - #{ moment(sheet.sendDate).day(5).format('YYYY/MM/DD') } 周工作周报
+                  - var sheet_item = JSON.parse(sheet.contents)
+                  table.table.hide
+                    tr
+                      th 任务名称
+                      th 工作内容
+                      th 使用工时
+                      th 参与人
+                      th 工作完成
+                      th 项目完成
+                    each item in sheet_item.items
+                      tr
+                        td #{item.name}
+                        td
+                          each content in item.contents
+                            p #{content.detail}
+                        td
+                          each content in item.contents
+                            p #{content.elapse}
+                        td #{item.participants}
+                        td
+                          each content in item.contents
+                            p #{content.progress}%
+                        td #{item.percent}%
+        else
+          p 暂无记录
+                  

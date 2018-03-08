@@ -1,0 +1,122 @@
+doctype html
+html
+  head
+    title #{title}-UED
+    link(rel='stylesheet', href='/bower_components/chosen_v1.0.0/chosen.css')
+    link(rel='stylesheet', href='/stylesheets/main.css')
+    link(rel='stylesheet', href='/bower_components/EP_datepicker/EP-datepicker.css')
+  body
+    .header
+        .layout
+            a.logo(href="/")
+                span 任务管理系统
+
+    block content
+    .page-title
+        .layout
+            h3 发布新项目
+    .layout
+        .create-task
+            .decoration-work
+            .create-task-table
+                form(action="" method="post")
+                    table.maintable(width="100%")
+                        colgroup
+                            col(width="120", align="right")
+                            col
+                        tr
+                            th 项目名称：
+                            td
+                                input.form-control(type="text", name="taskName", autocomplete="off", required)
+                        tr
+                            th 产品负责人：
+                            td
+                                select.form-control.chosen-select(name="mainPM", data-placeholder="可选择多人，第一个选择的为主负责人", multiple)
+                                    each pm in person.pm
+                                        option(value="#{pm.pmName}") #{pm.pmName}
+                        tr
+                            th 项目时间：
+                            td
+                                input#startDate.form-control.startDate(type="datetime", name="projectStartDate", required)
+                                |  至 
+                                input#endDate.form-control.endDate(type="datetime", name="projectEndDate", required)
+                        tr
+                            th UED时间：
+                            td
+                                input#startDate.form-control.startDate(type="datetime", name="projectUEDStartDate", required)
+                                |  至 
+                                input#endDate.form-control.endDate(type="datetime", name="projectUEDEndDate", required)
+                        tr
+                            th 项目描述：
+                            td
+                                textarea.form-control(width="564", name="taskIntro", required)
+                        //- tr
+                        //-     th 抄送E-mail：
+                        //-     td
+                        //-         //- input.text.text3(type="text", name="email")
+                        //-         select.form-control.chosen-select(name="email", data-placeholder="请选择...", multiple)
+                        //-             each pm in person.pm
+                        //-                 option(value="#{pm.pmEmail}@bitauto.com") #{pm.pmEmail}@bitauto.com
+                        //-             each user in person.ued
+                        //-                 option(value="#{user.userName}@bitauto.com") #{user.userName}@bitauto.com
+                        tr
+                            th 参考资料地址：
+                            td
+                                input.form-control(type="text", name="ReferenceUrl")
+                        tr
+                            td
+                            td
+                                input.btn.btn-primary(type="submit", value="发布项目")
+                                //- | 
+                                //- input.btn.btn-default(type="reset")
+
+    .footer
+        .team-member
+            .layout
+                dl
+                    dt 总监
+                    dd 和雪岭
+                dl
+                    dt 交互设计
+                    dd 许&nbsp;&nbsp;&nbsp;勃
+                    dd 董贺君
+                    dd 许瑞娟
+                    dd 余&nbsp;&nbsp;&nbsp;婧
+                dl.ui-member
+                    dt 视觉设计
+                    dd 田&nbsp;&nbsp;&nbsp;齐
+                    dd 马&nbsp;&nbsp;&nbsp;超
+                    dd 王&nbsp;&nbsp;&nbsp;琳
+                    dd 岳贤德
+                    dd 张&nbsp;&nbsp;&nbsp;登
+                    dd 宫小乐
+                    dd 顾&nbsp;&nbsp;&nbsp;燕
+                    dd 王&nbsp;&nbsp;&nbsp;瑞
+                dl
+                    dt 前端设计
+                    dd 马宗泽
+                    dd 王宪鹏
+                    dd 于&nbsp;&nbsp;&nbsp;静
+                    dd 宋&nbsp;&nbsp;&nbsp;洁
+        .copy-right
+            .layout
+                .min-logo
+                p UED任务管理系统 &copy 2013-2014 Easypass
+    #lifter.lifter
+
+    if (locals.current_user)
+        script.
+            var CURRENT_USER = '#{current_user.userId}';
+            var CURRENT_USER_POSITION = '#{current_user.position}';
+    script(src="/javascripts/jquery.min.js")
+    script(src="/javascripts/jquery-ui.js")
+    script(src="/bower_components/underscore/underscore-min.js")
+    script(src="/bower_components/chosen_v1.0.0/chosen.jquery.min.js")
+    script(src="/bower_components/EP_datepicker/EP-datepicker.js")
+    script(src="/bower_components/moment/min/moment.min.js")
+    script(src="/javascripts/jquery.nanoscroller.js")
+    script(src="/javascripts/jquery.base64.js")
+    script(src="/javascripts/slimScrollHorizontal.js")
+    script(src="/javascripts/nprogress.js")
+    script(src="/javascripts/bootstrap.min.js")
+    script(src="/javascripts/new.js")

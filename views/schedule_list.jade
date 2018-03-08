@@ -1,0 +1,38 @@
+extends base
+block content
+  .container
+      .layout
+          .schedule-page
+            a#js-edit-week-report.edit-week-report.btn.btn-primary.btn-lg.right(href="./schedule") 编写周报
+            h1.schedule-title 周报记录
+            table.table
+              if !sheets.length
+                  p 暂无周报记录。
+              else
+                  each sheet in sheets
+                    tr
+                      td
+                        p.js-toggle-sheet #{ moment(sheet.sendDate).day(1).format('YYYY/MM/DD') } - #{ moment(sheet.sendDate).day(5).format('YYYY/MM/DD') } 周工作周报 参与人: #{sheet.allTaskUsers}
+                        - var sheet_item = JSON.parse(sheet.contents)
+                        table.table.hide
+                          tr
+                            th 任务名称
+                            th 工作内容
+                            th 使用工时
+                            th 参与人
+                            th 工作完成
+                            th 项目完成
+                          each item in sheet_item.items
+                            tr
+                              td #{item.name}
+                              td
+                                each content in item.contents
+                                  p #{content.detail}
+                              td
+                                each content in item.contents
+                                  p #{content.elapse} 
+                              td #{item.participants}
+                              td
+                                each content in item.contents
+                                  p #{content.progress}%
+                              td #{item.percent}%

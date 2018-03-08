@@ -1,0 +1,55 @@
+doctype html
+html
+  head
+    title= title
+    link(rel='stylesheet', href='/stylesheets/css.css')
+    link(rel='stylesheet', href='/bower_components/chosen_v1.0.0/chosen.min.css')
+    link(rel='stylesheet', href='/bower_components/EP_datepicker/EP-datepicker.css')
+  body
+    .headbg
+        .head
+            a.logo(href="/")
+                img(src="../images/logo.jpg", alt="UED")
+            .fr
+                //- p #{locals.current_user.name}
+                if (locals.current_user)
+                    if (current_user.position === 0)
+                        div
+                            span= current_user.name
+                            ul
+                                li
+                                    a#modifyPW(href="javascript:void(0)") 修改密码
+                                li
+                                    a(href="/logout") 退出
+                            a(href="/main") 部门任务
+                            a(href="/user") 用户管理
+                            a(href="/workdate") 假期调整
+                    else
+                        | #{current_user.name}
+                        a(href="/main") 我的任务
+                        a#modifyPW(href="javascript:void(0)") 修改密码
+                        a(href="/logout") 退出
+                else 
+                    a(href="/login") 用户登录
+    .menubg
+        .menu.clearfix
+            a(class=tab==='index'?"on":'', href="/") 进行中
+            a(class=tab==='done'?"on":'', href="/task/done") 已完成
+            if (locals.current_user)
+                a(class=tab==='my'?"on":'', href="/task/my") 我的绩效
+            if (locals.current_user)
+                a.addpro(href="/task/create") 新建项目
+
+    block content
+
+    .footerbg
+        .footer
+
+    .gotop
+        a#gotop(href="javascript:void(0)")
+            img(src="../images/tips.jpg")
+
+    script(src="/javascripts/jquery.js")
+    script(src="/bower_components/chosen_v1.0.0/chosen.jquery.min.js")
+    script(src="/bower_components/EP_datepicker/EP-datepicker.js")
+    script(src="/javascripts/new.js")

@@ -1,0 +1,24 @@
+extends base
+block content
+    .page-title
+        .layout
+            h3 修改密码
+    .layout
+        form.form-horizontal.common-form(action="", method="post")
+            .form-group
+                label.col-sm-2 当前密码
+                .col-sm-10
+                    input.form-control(type="password", name="origin_pw", required)
+            .form-group
+                label.col-sm-2 新密码
+                .col-sm-10
+                    input.form-control(type="password", name="new_pw", required)
+            .form-group
+                label.col-sm-2 确认新密码
+                .col-sm-10
+                    input.form-control(type="password", name="confirm_pw", required)
+            .form-group
+                .col-sm-offset-2.col-sm-10
+                    if error
+                        p #{error}
+                    button.btn.btn-primary(type="submit") 确认修改密码

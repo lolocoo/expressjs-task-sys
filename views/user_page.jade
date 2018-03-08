@@ -1,0 +1,179 @@
+mixin user_select_list(users, selected, type)
+    select.form-control.J_user-selector.chosen-select-index
+        option(value="/") 全部
+        each user in users 
+            if user.position === type
+                if selected == user.userId
+                    option(value="/user/#{user['userId']}", selected) #{user.name}
+                else
+                    option(value="/user/#{user['userId']}") #{user.name}
+
+extend base
+block content
+    .layout.index-page
+        #indexTaskContainer.index-main
+            ul.task-list
+                li.task-list-item
+                    .task-progress-counter
+                        span.counter #{processCount.count}
+                        p.counter-text
+                            span 任务
+                            | 进行中
+                    .task-user-decoration
+                        img.user-avatar(src="/images/users/m_#{locals.current_user.userName}.png")
+                        | #{locals.current_user.name}的任务
+                for task in progressTask
+                    - var now = moment().valueOf()
+                    - var taskStartTime = task['departStartDate']
+                    - var deparEndtTime = task['departEndDate']
+                    - var taskEndtTime  = task['realEndDate']
+
+                    - var expectDays = task['UDexpectDate']+task['UIexpectDate']+task['FEexpectDate']
+                    - var departExpectDays = calc_workday(deparEndtTime, taskStartTime)
+                    - var pastDays = calc_workday(now, taskStartTime) + 1
+
+                    - var UD = task['UD']
+                    - var UI = task['UI']
+                    - var FE = task['FE']
+
+                    - var UDexpectDate = task['UDexpectDate']
+                    - var UIexpectDate = task['UIexpectDate']
+                    - var FEexpectDate = task['FEexpectDate']
+
+                    - var UDStartDate = task['UDStartDate']
+                    - var UIStartDate = task['UIStartDate']
+                    - var FEStartDate = task['FEStartDate']
+                    - var zero_day = '0000-00-00'
+
+                    - var positions = {'1':'UD', '2': 'UI', '3':'FE'}
+                    - var current_user_pos = positions[locals.current_user.position]
+
+                    - var len_user = 0
+                    - var len_expectDay = 0
+
+                    each val in [UD, UI, FE]
+                        if val
+                           - len_user += 1
+
+                    each val in [UDexpectDate, UIexpectDate, FEexpectDate]
+                        if val != 0
+                           - len_expectDay += 1
+
+                    if len_user != len_expectDay
+                        - expectDays = calc_workday(deparEndtTime, taskStartTime)
+
+                    - var percent = (pastDays / expectDays)*100
+
+                    mixin task_user_avatar()
+                        - var type = ['UD', 'UI', 'FE']
+                        - var users = locals.allUsers
+                        - var avatar_pos = _.range(1, len_user+1)
+                        each val in type
+                            if task[val + 'StartDate'] != zero_day && task['taskState'] == 1 && task['realEndDate'] == zero_day
+                                for user in users
+                                    if user.userId == task[val].split(',')[0]
+                                        if task[val + 'EndDate'] == zero_day
+                                            if task[val + 'taskStatus'] === 3
+                                                .task-avatar(class="avatar-3")
+                                                    img(src="/images/users/m_#{user.userName}.png")
+                                            else
+                                                .task-avatar(class="avatar-#{avatar_pos.shift()}")
+                                                    img(src="/images/users/m_#{user.userName}.png")
+                                        else
+                                            - avatar_pos.shift()
+
+                    mixin task_user_name(type, name, users)
+                        if task[type] && task['realEndDate'] === zero_day && task['taskState'] == 1
+                            -var user_status_classes = []
+                            if task[type + 'StartDate'] !== zero_day && task[type + 'EndDate'] === zero_day
+                                - user_status_classes.push('is-working')
+                            if task[type + 'taskStatus'] == 3
+                                - user_status_classes.push('is-reviewing')
+                            li(class=user_status_classes)
+                                for user in users
+                                    if user.userId == task[type].split(',')[0]
+                                        span= user.name
+                                span #{name}
+
+                    mixin task_user()
+                        - var types = ['UD', 'UI', 'FE']
+                        - var users = locals.allUsers
+                        - var user_position = {'1': 'UD', '2':'UI', '3': 'FE'}
+                        - var user_reviewing = false
+                        each type in types
+                            if task[type + 'taskStatus'] == 3
+                                - user_reviewing = true
+                        ul
+                            each type in types
+                                each user in users
+                                    if task[type] != null && user.userId == task[type].split(',')[0]
+                                        -var user_status_classes = []
+                                        if task[type + 'StartDate'] !== zero_day && task[type + 'EndDate'] === zero_day
+                                            - user_status_classes.push('is-working')
+                                        if task[type + 'taskStatus'] == 3
+                                            - user_status_classes.push('is-reviewing')
+                                        li(class=user_status_classes)
+                                            unless user_reviewing
+                                                if task[type + 'expectDate'] == 0
+                                                    .no-evaluated 未评估
+                                                else 
+                                                    .avatar: img(src="/images/users/m_#{user.userName}.png")
+                                            .name #{user.name}
+                                            .pos #{type}
+
+                    li.task-list-item
+                        a(class=(task[current_user_pos+'expectDate']==0 && task['taskState']==1)?'highlight':'', href="/task/#{task['taskId']}")
+                            .task-item
+                                h3= task['taskName']
+                                if task['mainPM']
+                                    - var pm = task['mainPM'].split(',')[0]
+                                            if pm != '无' && pm != ''
+                                                strong(class= task['taskState']===2 || task['taskState'] === 3 ?'dim':'') #{pm}
+
+                                case task['taskState']
+                                    when 1
+                                        if task['UDtaskStatus'] === 3
+                                            p.project-tips.review 交互评审中
+                                        else if task['UItaskStatus'] === 3
+                                            p.project-tips.review 视觉评审中
+                                        else if task['FEtaskStatus'] === 3
+                                            p.project-tips.review 前端评审中
+                                    when 2
+                                        p.project-tips.text-center 任务暂停
+                                    when 3
+                                        p.project-tips.text-center 任务终止
+                                    when 4
+                                        p.project-tips.success.text-center 任务完成
+                                    default
+                                        p
+
+                                if task['taskState'] == 1
+                                    .task-item-bar-chart
+                                        .task-item-bar-chart-inner(style="width:#{percent}%", class=parseInt(percent, 10) > 100 ? 'over-time' : '')
+                                    .task-item-member
+                                        +task_user()
+                            
+                            .task-item-status
+                                .task-item-status-hd
+                                    span.right #{moment(taskStartTime).format('MM.DD')} - #{moment(deparEndtTime).format('MM.DD')}
+                                    h3 预计工期：#{departExpectDays} 天
+                                .task-item-status-bd
+                                    p 项目描述：#{task.taskIntro}
+            .pagination
+                if p-1 > 0
+                    a.btn.btn-default(href="?p=#{p-1}") 上一页
+                | 
+                if p < taskCount
+                    a.btn.btn-default(href="?p=#{p+1}") 下一页
+        .index-sub
+            ul.task-counter-list
+                li.task-counter-item
+                    a(href="javascript:void(0)")
+                        p
+                            strong #{accomplishCount.count}
+                            span 任务完成
+                li.task-counter-item.pause
+                    a(href="javascript:void(0)")
+                        p
+                            strong #{pauseCount}
+                            span 暂停/终止任务

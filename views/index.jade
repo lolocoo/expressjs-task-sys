@@ -1,0 +1,116 @@
+extends layout
+
+block content
+    .container
+        .pro_list
+            each task in tasks
+                - var expectDays = task['UDexpectDate']+task['UIexpectDate']+task['buildExpectDate']
+                - var expectDaysVal = moment(task['UDStartDate']).add('d', expectDays)
+                - var departEndDate = task['departEndDate']
+                - var allMonths = expectDaysVal.get('year')*12+expectDaysVal.get('month') - moment(task['UDStartDate']).get('year')*12-moment(task['UDStartDate']).get('month')
+                .pro
+                    .pro_title.clearfix
+                        .fl
+                            strong= task['taskName']
+                            |  #{ moment(task['departStartDate']).format("YYYY.MM.DD") } - #{ moment(task['departEndDate']).format("YYYY.MM.DD") }
+                        .fr
+                            span.pro_title_name
+                                each user in task['users']
+                                    | #{user.name} 
+                            em.view.up 展开
+                    .pro_cot.clearfix
+                        .fr.pro_b
+                            .subtitle.clearfix
+                                div
+                                    strong 预计工期：
+                                    em #{ expectDays }
+                                    | 天
+                            .gqcount
+                                each user in task['users']
+                                    .gqcountdiv.clearfix
+                                        .headpic
+                                            img(src="/images/users/#{user['e_name']}.png")
+                                            if user.position === 1
+                                                span 交互
+                                            if user.position === 2
+                                                span 视觉
+                                            if user.position === 3
+                                                span 前端
+                                            var 未评估
+                            .pro_block
+                                .yqtable
+                                    table(width="100%", cellpadding="0", cellspacing="0")
+                                        tr
+                                            td(width="80") 产品经理：
+                                            td= task['mainPM']
+                                        if task['UD']
+                                            tr
+                                                td(width="80") 交互设计: 
+                                                td
+                                                    each user in task['users']
+                                                        if user.position === 1
+                                                            | #{user.name}
+                                        if task['UI']
+                                            tr
+                                                td(width="80") 视觉设计： 
+                                                td
+                                                    each user in task['users']
+                                                        if user.position === 2
+                                                            | #{user.name}
+                                        if task['builder']
+                                            tr
+                                                td(width="80") 前端开发： 
+                                                td
+                                                    each user in task['users']
+                                                        if user.position === 3
+                                                            | #{user.name} ,
+                                        tr
+                                            td(valign="top") 项目描述：
+                                            td #{task['taskIntro']}
+                        .fl.pro_b.shiji
+                            .subtitle.clearfix
+                                div 未开始
+                            - var today = moment();
+                            - var date = moment(task['departStartDate'])
+                            - var month = date.get('month');
+                            - for(var j=0; j<=allMonths; j++)
+                                .pro_block
+                                    .p_week.clearfix
+                                        span MON
+                                        span TUE
+                                        span WED
+                                        span THU
+                                        span FRI
+                                        span SAT
+                                        span SUN
+                                    ul.clearfix
+                                        - date.set('month', month + j);
+                                        - var day = (date.date(1).day() === 0) ? 6 : date.date(1).day()-1
+                                        - var days = date.daysInMonth()
+                                        - var daysInMonth = date.daysInMonth()
+                                        - var remains = 42 - day -days
+
+                                        - for(var i=0; i<day; i++)
+                                            li
+                                                | 
+                                        - for(var i=1; i<=days; i++)
+                                            li
+                                                span.day(class=(date.date(i).day()===0||date.date(i).day()===6)?'is-weekend':'')= i
+        
+                                                if task['UD']
+                                                    if moment(task['UDStartDate']).valueOf() <= date.date(i).valueOf() && date.date(i).valueOf() <= moment(task['UDEndDate']).valueOf() && date.date(i).day() !== 0 && date.date(i).day() !== 6
+                                                        span.work.uds.ue
+                                                            | 
+                                                if task['UI']
+                                                    if moment(task['UIStartDate']).valueOf() <= date.date(i).valueOf() && date.date(i).valueOf() <= moment(task['UIEndDate']).valueOf() && date.date(i).day() !== 0 && date.date(i).day() !== 6
+                                                        span.work.uis.ui
+                                                            | 
+                                                if task['builder']
+                                                    if moment(task['buildStartDate']).valueOf() <= date.date(i).valueOf() && date.date(i).valueOf() <= moment(task['realEndDate']).valueOf() && date.date(i).day() !== 0 && date.date(i).day() !== 6
+                                                        span.work.builds.builder
+                                                            | 
+                                        - for(var i=0; i<remains; i++)
+                                            li
+
+
+

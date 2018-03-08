@@ -1,0 +1,18 @@
+extends base
+block content
+    .page-title
+        .layout
+            a(href="/user/new").btn.btn-primary.right 新增人员
+            h3 人员管理
+    .layout
+        table(class="table usertable fz14 mt20 mb20", cellpadding="0", cellspacing="0", width="100%")
+            tr
+                th 姓名
+                th 职位
+                th 操作
+            each person in persons
+                tr
+                    td= person['name']
+                    td #{{1: '交互设计师' ,2: '视觉设计师' , 3: '前端工程师'}[person['position']]}
+                    td
+                        a(href="/user/delete/#{person['userId']}") 删除

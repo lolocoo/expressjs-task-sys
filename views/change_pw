@@ -1,0 +1,27 @@
+extends base
+block content
+    .page-title
+        .layout
+            h3 添加用户
+    .layout
+        form.form-horizontal.common-form(action="", method="post")
+            .form-group
+                label.col-sm-2 姓名
+                .col-sm-10
+                    input.form-control(type="text", name="name", required)
+            .form-group
+                label.col-sm-2 邮箱前缀
+                .col-sm-10
+                    input.form-control(type="text", name="userName", required)
+            .form-group
+                label.col-sm-2 职位
+                .col-sm-10
+                    select.form-control(name="position")
+                        option(value="1") 交互设计师
+                        option(value="2") 视觉设计师
+                        option(value="3") 前端工程师
+            .form-group
+                .col-sm-offset-2.col-sm-10
+                    button.btn.btn-primary(type="submit") 确认
+                    | 
+                    a.btn.btn-default(href="/") 取消

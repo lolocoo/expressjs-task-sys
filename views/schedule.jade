@@ -1,0 +1,149 @@
+extends base
+block content
+  .container
+      .layout
+          .schedule-page
+            if (locals.current_user)
+                if (current_user.position === 0)
+                    h1.schedule-title 周报管理
+                    - var users = locals.allUsers
+                    - var UEUsers = _.filter(users, function(user){ return user.position == 1})
+                    - var UIUsers = _.filter(users, function(user){ return user.position == 2})
+                    - var FEUsers = _.filter(users, function(user){ return user.position == 3})
+                    - var sentID = _.chain(sendSheetUserId).map(function(item){ return item.userid; }).value()
+
+                    mixin userList(title, users, cls)
+                      div.user-list(class=cls)
+                        h3 #{title}
+                        ul
+                          each user in users
+                            li(class=sentID.indexOf(user.userId)!== -1?'':'unSent')
+                              a(href="/schedule/#{user.userId}")
+                                img(src="/images/users/m_#{user.userName}.png")
+                                p #{user.name}
+                    each item in [['交互', UEUsers, 'ud-list'],['视觉', UIUsers, 'ui-list'],['前端', FEUsers, 'fe-list']]
+                      +userList(item[0], item[1], item[2])
+                else
+                    div(ng-app='worksheetApp')
+                        div(ng-controller='taskCtrl')
+                          div(ng-show="task")
+                              h1(ng-show="task").schedule-title {{ task.userName }} 的工作周报
+                                a.glyphicon.glyphicon-time(href="/schedule_list")
+                              h3.schedule-subtitle 本周工作
+                              .schedule-action
+                                  .schedule-time 本周工时：{{ getTotalTimes() }}
+                                  //- button.btn.btn-primary(ng-show="task",ng-disabled='getAllItems() >= 5', ng-click='addCustomProject()') 新建任务
+                                  button.btn.btn-primary(ng-show="task", ng-click='addCustomProject()') 新建任务
+                              table.table.table-bordered(ng-show="task")
+                                colgroup
+                                  col(width="200")
+                                  col(width="420")
+                                  col(width="60")
+                                  col(width="177")
+                                  col(width="100")
+                                  col(width="90")
+                                  col(width="46")
+                                tbody
+                                  tr
+                                    th 任务名称
+                                    th 工作内容
+                                    th 工时
+                                    th 参与人
+                                    th 工作完成
+                                    th 项目完成
+                                    th
+                                  tr(ng-repeat='item in task.items')
+                                    td
+                                      p(ng-show="item.type=='system'")
+                                          strong
+                                            a(href="/task/{{item.taskId}}", target="_blank") {{item.name}}
+                                      input.form-control(ng-show="item.type!=='system'", ng-model="item.name")
+                                      button.add.btn(ng-disabled='item.contents.length>=5', ng-click='addItem($index)')
+                                        span.glyphicon.glyphicon-plus
+                                        | &nbsp; 添加内容
+                                      button.delete.btn.btn-danger(ng-show='item.type=="custom"', ng-click='removeCustomProject($index)') 删除任务
+                                    td(class="item-{{$index}}", colspan='6')
+                                      table.table
+                                        colgroup
+                                          col(width="420")
+                                          col(width="60")
+                                          col(width="177")
+                                          col(width="100")
+                                          col(width="90")
+                                          col(width="46")
+                                        tbody
+                                          tr(ng-repeat='content in item.contents')
+                                            td
+                                              input.form-control(ng-model="content.detail", placeholder="描述具体工作内容")
+                                            td
+                                              input.form-control.text-center(ng-model="content.elapse", placeholder="0")
+                                            td
+                                              input.form-control(ng-model="item.participants", format-username, placeholder="请输入参与人")
+                                            td
+                                              input.rate-number.form-control(ng-model="content.progress", placeholder="0")
+                                              span %
+                                            td
+                                              input.percent-num.form-control(ng-model="item.percent", ng-disabled='item.type!=="custom"', placeholder="0")
+                                              span %
+                                            td
+                                              span.glyphicon.glyphicon-remove(ng-hide='item.contents.length<=1', ng-click='removeItem(item, $index)')
+                              
+                              h3.schedule-subtitle 下周工作计划
+                              .schedule-action
+                                  .schedule-time 计划工时：{{ getScheduleTotalTimes() }}
+                                  //- button.btn.btn-primary(ng-show="task", ng-disabled='task.scheduleItems.length >= 5', ng-click='addScheduleProject()') 新建任务
+                                  button.btn.btn-primary(ng-show="task", ng-click='addScheduleProject()') 新建任务
+                              table.table.table-bordered(ng-show="task")
+                                colgroup
+                                  col(width="205")
+                                  col(width="420")
+                                  col(width="80")
+                                  col(width="177")
+                                  col(width="236")
+                                tbody
+                                  tr
+                                    th 任务名称
+                                    th 工作内容
+                                    th 计划工时
+                                    th 参与人
+                                    th 优先级
+                                  tr(ng-repeat="item in task.scheduleItems")
+                                    td
+                                      p(ng-show="item.type=='system'")
+                                          strong
+                                            a(href="/task/{{item.taskId}}", target="_blank") {{item.name}}
+                                      input.form-control(ng-show="item.type!=='system'", ng-model="item.name")
+                                      button.add.btn(ng-disabled='item.contents.length>=5', ng-click='addScheduleItem($index)')
+                                        span.glyphicon.glyphicon-plus
+                                        | &nbsp; 添加内容
+                                      button.delete.btn.btn-danger(ng-show='item.type=="custom"', ng-click='removeScheduleProject($index)') 删除任务
+                                    td(class="item-{{$index}}", colspan='6')
+                                      table.table
+                                        colgroup
+                                          col(width="435")
+                                          col(width="80")
+                                          col(width="177")
+                                          col(width="236")
+                                          col
+                                        tbody
+                                          tr(ng-repeat='content in item.contents')
+                                            td
+                                              input.form-control(ng-model="content.detail", placeholder="描述具体工作内容")
+                                            td
+                                              input.form-control.text-center(ng-model="content.elapse", placeholder="0")
+                                            td
+                                              input.form-control(ng-model="item.participants", format-username, placeholder="请输入参与人")
+                                            td
+                                              .schedule-work-priority
+                                                //- input(ng-model="content.priority")
+                                                //- br
+                                                span(ng-class="content.priority > $index ? 'on' :'' ",
+                                                  ng-click="setPriority(content, $index)",
+                                                  ng-repeat="star in [0,1,2,3,4]").glyphicon.glyphicon-star
+                                            td
+                                              span.glyphicon.glyphicon-remove(ng-hide='item.contents.length<=1', ng-click='removeItem(item, $index)')
+                              div.text-center.mt40
+                                button.w-200.btn.btn-lg.btn-primary(ng-show="task", ng-disabled="isSending", ng-click="sendMail()") 发送周报
+
+
+                    
